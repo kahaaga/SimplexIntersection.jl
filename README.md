@@ -19,3 +19,22 @@ This will create a local copy of the repository in your `~/.julia/v0.6/` directo
 
 ## R bindings
 An R package, rSimplexIntersection, that wraps the functions in SimplexIntersection.jl is available [here](https://github.com/kahaaga/r-simplexintersection).
+
+
+# Examples
+```julia
+# Load package
+using SimplexIntersection
+
+# Define two simplices that have som overlapping volume
+simplex1 = [1.12545 0.0978862 0.401808 1.91521;
+        0.979468 -0.171237 0.0978862 1.12545;
+        0.491734 -0.452719 -0.171237 0.979468];
+simplex2 = [0.979468 -0.171237 0.0978862 1.12545;
+        0.491734 -0.452719 -0.171237 0.979468;
+        0.401808 -0.537488 -0.452719 0.491734];
+
+# Compute the volume. By default, a tuple of volume and vertices is returned.
+# Here, we keep only the volume.
+vol = simplexintersection(simplex1, simplex2)[1]
+```
