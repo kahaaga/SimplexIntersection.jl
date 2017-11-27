@@ -5,7 +5,7 @@ dimensions. Computes both the intersecting volume and the points
 in which the simplices intersect.
 
 ## Requirements
-SimplexIntersection.jl requires Julia 0.6 to run. The package has currently only been tested on macOS.
+SimplexIntersection.jl requires Julia 0.6 to run. The package has currently only been tested on macOS. You can download the latest version of Julia from the official Julia [website](https://julialang.org/downloads/). 
 
 ## Installation
 
