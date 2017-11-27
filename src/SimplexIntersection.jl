@@ -1,4 +1,5 @@
 module SimplexIntersection
+export simplexintersection
 
 #include("load_modules.jl")
 include("CommonVertices.jl")
@@ -46,8 +47,7 @@ S2::Array{Float64, 2} Simplex 2 represented a matrix of dimension nx(n+1), where
 Returns
 -------
 """
-export SimplexIntersectionNew
-function SimplexIntersectionNew(S1, S2, tolerance::Float64)
+function simplexintersection(S1, S2, tolerance::Float64)
 
   # Ensure all coordinates are floating point numbers.
 
