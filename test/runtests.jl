@@ -1,5 +1,8 @@
 using SimplexIntersection
 using Base.Test
 
-# write your own tests here
-@test 1 == 2
+#!/usr/bin/env julia
+# Run tests
+
+println("Testing simplex intersection against MATLAB results")
+@time @test include("test_simplexintersection.jl")
