@@ -17,10 +17,6 @@ Pkg.clone("git@github.com:kahaaga/SimplexIntersection.jl.git")
 
 This will create a local copy of the repository in your `~/.julia/v0.6/` directory. Make sure to install the dependencies that get listed during installation.
 
-## R bindings
-An R package, rSimplexIntersection, that wraps the functions in SimplexIntersection.jl is available [here](https://github.com/kahaaga/r-simplexintersection).
-
-
 # Examples
 ```julia
 # Load package
@@ -38,3 +34,7 @@ simplex2 = [0.979468 -0.171237 0.0978862 1.12545;
 # Here, we keep only the volume.
 vol = simplexintersection(simplex1, simplex2)[1]
 ```
+
+# R bindings
+An R package, rSimplexIntersection, that wraps the functions in SimplexIntersection.jl is available [here](https://github.com/kahaaga/r-simplexintersection).
+
