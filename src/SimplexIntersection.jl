@@ -43,7 +43,11 @@ S2::Array{Float64, 2} Simplex 2 represented a matrix of dimension nx(n+1), where
 Returns
 -------
 """
+<<<<<<< HEAD
+function simplexintersection(S1, S2, tolerance::Float64)
+=======
 function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volume")
+>>>>>>> dd08f4b980ece4661b8f21c5bf7ae647c84855e5
 
   # Ensure all coordinates are floating point numbers.
 
