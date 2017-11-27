@@ -1,7 +1,6 @@
 module SimplexIntersection
 export simplexintersection
 
-#include("load_modules.jl")
 include("CommonVertices.jl")
 include("NonCommonVertices.jl")
 include("ContainedVertices.jl")
@@ -29,9 +28,6 @@ include("TriangulationPolytopeFaces.jl")
 include("NullSpace.jl")
 include("TriangulationNonSimplicialFaces.jl")
 include("SimplexChecks.jl")
-# Tests
-include("test_InsideCircum.jl")
-include("test_commonvertices.jl")
 
 """
     SimplexIntersection()
@@ -47,7 +43,11 @@ S2::Array{Float64, 2} Simplex 2 represented a matrix of dimension nx(n+1), where
 Returns
 -------
 """
+<<<<<<< HEAD
 function simplexintersection(S1, S2, tolerance::Float64)
+=======
+function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volume")
+>>>>>>> dd08f4b980ece4661b8f21c5bf7ae647c84855e5
 
   # Ensure all coordinates are floating point numbers.
 
@@ -164,8 +164,14 @@ function simplexintersection(S1, S2, tolerance::Float64)
       end
     end
   end
-  return IntVol[1]
-end
 
+  if what == "volume"
+    return IntVol[1], []
+  elseif what == "vertices"
+    return IntVert, []
+  elseif what == "both"
+    return IntVol[1], IntVert
+  end
+end
 
 end # module
