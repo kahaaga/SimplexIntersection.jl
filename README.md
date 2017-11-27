@@ -11,7 +11,7 @@ SimplexIntersection.jl requires Julia 0.6 to run. The package has currently only
 
 To install the package, run the following command in the Julia console:
 
-```
+```julia
 Pkg.clone("git@github.com:kahaaga/SimplexIntersection.jl.git")
 ```
 
