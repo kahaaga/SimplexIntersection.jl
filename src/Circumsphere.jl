@@ -10,8 +10,7 @@ function Circumsphere(simplex::Array{Float64, 2})
     n = size(simplex, 1) # Dimension of the space the simplex lives in
     centroid = simplex * ones(n + 1, 1) / (n + 1)
     centroidmatrix = repmat(centroid, 1, n + 1)
-
-    radius = sqrt(maximum(ones(1, n) * ((simplex - centroidmatrix).^2)))
+    radius = maximum(ones(1, n) * ((simplex - centroidmatrix).^2))
 
     return [radius; centroid]
 end
