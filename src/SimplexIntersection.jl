@@ -3,6 +3,7 @@ export simplexintersection
 
 include("CommonVertices.jl")
 include("NonCommonVertices.jl")
+include("barycentric-coordinates.jl")
 include("ContainedVertices.jl")
 include("ShareFace_nD.jl")
 include("geometry.jl")
@@ -13,22 +14,26 @@ include("Circumsphere.jl")
 include("InsideCircum.jl")
 include("complementary.jl")
 include("InfoVerticesOutside.jl")
-include("IntersectingBoundaries.jl")
+include("intersection-of-boundaries.jl")
+include("some-vertex-in-circumsphere.jl")
 include("ConvexExpansion.jl")
 include("Binary.jl")
 include("BoundaryxBoundary.jl")
+include("sharing-a-face.jl")
 include("QR.jl")
 include("UpdateNonZeroSearchingIndex.jl")
 include("MinimalBoundaries.jl")
 include("ConvexExpAndIntVert.jl")
 include("Update.jl")
 include("IntersectingOfPolytopeVertices.jl")
+include("polytope-generating-vertices.jl")
 include("VolumeBT.jl")
 include("TriangulationPolytopeFaces.jl")
 include("NullSpace.jl")
 include("TriangulationNonSimplicialFaces.jl")
 include("SimplexChecks.jl")
-
+include("volume-computation.jl")
+include("shared-vertices.jl")
 """
     SimplexIntersection()
 
@@ -74,87 +79,59 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
 
   # If the (distance between centroids)^2-(sum of radii)^2 < 0,
   # then the simplices intersect in some way.
-  dist_difference = (transpose(c1 - c2) * (c1 - c2) - (r1 + r2)^2)[1]
+  dist_difference = ((c1 - c2).' * (c1 - c2) - (r1 + r2)^2)[1]
+
+
   #println()
   if (dist_difference < 0)
     # Find the number of points of each simplex contained within the
     # circumsphere of the other simplex
     #println("The simplices intersect in some way")
 
-    Index1in2, numof1in2 = InsideCircum(S1, r2, c2, n)
-    Index2in1, numof2in1 = InsideCircum(S2, r1, c1, n)
+    vertices1InCircum2 = SomeVertexInCircumsphere(S1, r2, c2)
+    vertices2InCircum1 = SomeVertexInCircumsphere(S2, r1, c1)
 
     # At least one circumsphere contains vertices of the other simplex
-    if numof1in2 * numof2in1 > 0
+    if vertices1InCircum2 + vertices2InCircum1 >= 1
+      #println("At least one circumsphere contains vertices of the other simplex")
 
+      ConvexExp1in2, ConvexExp2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1 = BarycentricCoordinates(S1,S2,orientation_S1,orientation_S2,tolerance)
+      #            TriviallyContained=Heaviside0([numof1in2 numof2in1]-(n+1));
+      #            IsSomeContained=sum(TriviallyContained,2);
 
-      # Find common vertices
-      commonvertices = CommonVertices(copy(S1), copy(S2), Index1in2, Index2in1,
-                                      numof1in2, numof2in1, n)
+      # Trivial intersections
+      TriviallyContained = heaviside0([numof1in2 numof2in1] - (n+1))
+      IsSomeContained=sum(TriviallyContained, 2)[1]
 
-      Ncomm = commonvertices[1]             # Number of common vertices
-      InternalComIndex1 = commonvertices[2] # Indices in the vector Index1in2 of the indices corresponding to the contained vertices
-      InternalComIndex2 = commonvertices[3] # Indices in the vector Index2in1 of the indices cooresponding to the contained vertices
-      IndexComVert1 = commonvertices[4]     # Indices of common vertices for simplex S1
-      IndexComVert2 = commonvertices[5]     # Indices of common vertices for simplex S1
+      if IsSomeContained == 2 # The simplices coincide
+        IntVol = abs(O1)
+      elseif IsSomeContained == 1.0 # One simplex is contained in the other
+        if TriviallyContained[1] == 1.0 # Simplex1 is contained in Simplex2
+          IntVol = abs(orientation_S1)
+        else# Simplex2 is contained in Simplex1
+          IntVol = abs(orientation_S2)
+        end
+      else# No simplex contains the other
 
-      #
+        Ncomm, ordered_vertices1, ordered_vertices2 = SharedVertices(ConvexExp1in2,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1)
 
-      # The simplices coincide
-      if Ncomm == n + 1
-        #print("# The simplices coincide")
-        IntVol = abs(orientation_S1)
+        # Is there any shared face?
+        if Ncomm == n
+          #print("The simplices share a face")
+          IntVol = SharingAFace(S2, ConvexExp1in2, ordered_vertices1, ordered_vertices2)
 
-      # The simplices share a face
-      elseif Ncomm == n
-        #print("The simplices share a face")
-        IntVol = ShareFace_nD(S1, S2, IndexComVert1, IndexComVert2, orientation_S1, orientation_S2, tolerance)
-
-      # The simplices might have nontrivial intersection
-      else
-        #print("The simplices might have nontrivial intersection")
-
-        NonComVert1in2 = NonCommonVertices(InternalComIndex1, Index1in2, numof1in2, Ncomm) # Indices of the non common vertices of S1 in the circumsphere of S2
-        NonComVert2in1 = NonCommonVertices(InternalComIndex2, Index2in1, numof2in1, Ncomm) # Indices of the non common vertices of S2 in the circumsphere of S1
-        #println()
-        numof1in2NotCom, All1in2, InfoVertices1in2 = ContainedVertices(S2, S1, NonComVert1in2, orientation_S2, tolerance)
-        numof2in1NotCom, All2in1, InfoVertices2in1 = ContainedVertices(S1, S2, NonComVert2in1, orientation_S1, tolerance)
-        #println()
-
-
-        # S1 is contained in S2
-        if (numof1in2NotCom + Ncomm == n + 1)
-        #println("\tS1 is contained in S2")
-
-          IntVol = abs(orientation_S1);
-
-        # S2 is contained in S1
-        elseif (numof2in1NotCom + Ncomm == n + 1)
-          #println("\tS2 is contained in S1")
-          IntVol = abs(orientation_S2);
-
-        # Intersection is more complex
-        else
-          # Remember that the first rows of the following matrices contains
-          # indices and should be converted to int when used later
-          Vert1Inside2 = VerticesInside(InfoVertices1in2, numof1in2NotCom, IndexComVert1, IndexComVert2, n, Ncomm)
-          Vert2Inside1 = VerticesInside(InfoVertices2in1, numof2in1NotCom, IndexComVert2, IndexComVert1, n, Ncomm)
-          #println()
-
-          Vert1Outside2 = VerticesOutside(S2, S1, InfoVertices1in2, numof1in2NotCom, All1in2, orientation_S2, tolerance, n, Ncomm, IndexComVert1)
-          Vert2Outside1 = VerticesOutside(S1, S2, InfoVertices2in1, numof2in1NotCom, All2in1, orientation_S1, tolerance, n, Ncomm, IndexComVert2)
-          #println()
-
-          IntVert, ConvexExpIntVert = IntersectingBoundaries(S1, S2, Vert1Inside2, Vert2Inside1, Vert1Outside2, Vert2Outside1, Ncomm, n, tolerance)
+        else # The simplices do not share a face.
+          IntVert, ConvexExpIntVert  = IntersectionOfBoundaries(S1,S2,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm,tolerance);
           dim = size(IntVert, 2)
 
           if dim > 1
-            IntVert, ConvexExpIntVert = IntersectionPolytopeVertices(S1, S2, IntVert, ConvexExpIntVert, Vert1Inside2, Vert2Inside1, numof1in2NotCom, numof2in1NotCom, Ncomm, n)
-
-            IntVol = VolumeBT(IntVert, ConvexExpIntVert, n);
+            IntVert,ConvexExpIntVert = PolytopeGeneratingVertices(S1,S2,IntVert,ConvexExpIntVert,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm);
+            IntVol = VolumeComputation(IntVert, ConvexExpIntVert)
           end
         end
       end
+    else
+      #println("No circumsphere of either simplex contains vertices of the other simplex")
     end
   end
 
