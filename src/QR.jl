@@ -15,11 +15,11 @@ function QR(Gamma, tolerance)
    # We know that rank(Gamma)=n-1
    #and rank(Gamma0)=n
    # In addition all columns of M are non vanishing
-
    ## Outcome
    # lambda is a column vector containing the components of a vector generating
    # Nul(M) with all the components summing up to 1
    ##
+
    n = size(Gamma, 2)
    m = size(Gamma, 1) # m>=n-1
    if m == 1
@@ -37,7 +37,8 @@ function QR(Gamma, tolerance)
 
      #diagonal is a column vector with dimension either n-1 (if m=n-1) or n (if m>=n)
       diagonal = heaviside(tolerance - abs.(diag(R)))
-      index = transpose(collect(1:min(m, n))) * diagonal
+      index = round.(Int, collect(1:min(m, n)).' * diagonal)[1]
+
       if index == 0
          # the first n-1 columns are linearly independent
          index = n - 1
@@ -46,12 +47,10 @@ function QR(Gamma, tolerance)
          index = index - 1
       end
       lambda = zeros(n, 1)
-      index = round(Int64, index[1])
       lambda[1:index] = - R[1:index, 1:index] \ R[1:index, index + 1] # A\b means inv(A)*b
       lambda[index + 1] = 1
       lambda = lambda / (ones(1, n) * lambda)
    end
-   
    lambda = lambda .* heaviside(abs.(lambda) - tolerance)
 
    return(lambda)
