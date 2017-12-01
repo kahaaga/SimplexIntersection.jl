@@ -66,6 +66,7 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
 
   # Set volume to zero initially. Change only if there is intersection
   IntVol = 0
+  IntVert = []
 
 # -------------------------------------
 # Simplices intersect in some way
@@ -78,7 +79,6 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
   if (dist_difference < 0)
     # Find the number of points of each simplex contained within the
     # circumsphere of the other simplex
-    #println()
     Index1in2, numof1in2 = InsideCircum(S1, r2, c2, n)
 
     Index2in1, numof2in1 = InsideCircum(S2, r1, c1, n)
@@ -158,9 +158,9 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
   end
 
   if what == "volume"
-    return IntVol[1], []
+    return IntVol[1]
   elseif what == "vertices"
-    return IntVert, []
+    return IntVert
   elseif what == "both"
     return IntVol[1], IntVert
   end
