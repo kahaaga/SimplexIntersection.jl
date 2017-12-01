@@ -79,8 +79,9 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
   if (dist_difference < 0)
     # Find the number of points of each simplex contained within the
     # circumsphere of the other simplex
-    Index1in2, numof1in2 = InsideCircum(S1, r2, c2, n)
+    #println("The simplices intersect in some way")
 
+    Index1in2, numof1in2 = InsideCircum(S1, r2, c2, n)
     Index2in1, numof2in1 = InsideCircum(S2, r1, c1, n)
 
     # At least one circumsphere contains vertices of the other simplex
