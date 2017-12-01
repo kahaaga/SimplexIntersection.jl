@@ -67,15 +67,6 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
   # Set volume to zero initially. Change only if there is intersection
   IntVol = 0
 
-  MinVol = min(abs(orientation_S1), abs(orientation_S2))
-  # ---------------------------------
-  # Zero-intersection
-  # ---------------------------------
-  if zerointersection(S1, S2) == true
-    return(IntVol)
-  end
-
-
 # -------------------------------------
 # Simplices intersect in some way
 # -------------------------------------
@@ -110,14 +101,18 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
 
       # The simplices coincide
       if Ncomm == n + 1
+        print("# The simplices coincide")
         IntVol = abs(orientation_S1)
 
       # The simplices share a face
       elseif Ncomm == n
+        print("The simplices share a face")
         IntVol = ShareFace_nD(S1, S2, IndexComVert1, IndexComVert2, orientation_S1, orientation_S2, tolerance)
 
       # The simplices might have nontrivial intersection
       else
+        print("The simplices might have nontrivial intersection")
+
         NonComVert1in2 = NonCommonVertices(InternalComIndex1, Index1in2, numof1in2, Ncomm) # Indices of the non common vertices of S1 in the circumsphere of S2
         NonComVert2in1 = NonCommonVertices(InternalComIndex2, Index2in1, numof2in1, Ncomm) # Indices of the non common vertices of S2 in the circumsphere of S1
         #println()
@@ -128,13 +123,13 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
 
         # S1 is contained in S2
         if (numof1in2NotCom + Ncomm == n + 1)
-        #println("\tS1 is contained in S2")
+        println("\tS1 is contained in S2")
 
           IntVol = abs(orientation_S1);
 
         # S2 is contained in S1
         elseif (numof2in1NotCom + Ncomm == n + 1)
-          #println("\tS2 is contained in S1")
+          println("\tS2 is contained in S1")
           IntVol = abs(orientation_S2);
 
         # Intersection is more complex
