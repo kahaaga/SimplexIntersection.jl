@@ -49,12 +49,7 @@ Returns
 -------
 """
 
-function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volume")
-
-  # Ensure all coordinates are floating point numbers.
-
-  S1 = float(S1)
-  S2 = float(S2)
+function simplexintersection(S1::Array{Float64}, S2::Array{Float64}, ;tolerance::Float64 = 1/10^10, what = "volume")
 
   # Dimension
   n = size(S1, 1)
@@ -81,37 +76,31 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
   # then the simplices intersect in some way.
   dist_difference = ((c1 - c2).' * (c1 - c2) - (r1 + r2)^2)[1]
 
-
-  #println()
-  if (dist_difference < 0)
+  if dist_difference < 0
     # Find the number of points of each simplex contained within the
     # circumsphere of the other simplex
-    #println("The simplices intersect in some way")
 
     vertices1InCircum2 = SomeVertexInCircumsphere(S1, r2, c2)
     vertices2InCircum1 = SomeVertexInCircumsphere(S2, r1, c1)
 
     # At least one circumsphere contains vertices of the other simplex
-    if vertices1InCircum2 + vertices2InCircum1 >= 1
-      #println("At least one circumsphere contains vertices of the other simplex")
 
+    if vertices1InCircum2 + vertices2InCircum1 >= 1
       ConvexExp1in2, ConvexExp2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1 = BarycentricCoordinates(S1,S2,orientation_S1,orientation_S2,tolerance)
-      #            TriviallyContained=Heaviside0([numof1in2 numof2in1]-(n+1));
-      #            IsSomeContained=sum(TriviallyContained,2);
 
       # Trivial intersections
       TriviallyContained = heaviside0([numof1in2 numof2in1] - (n+1))
-      IsSomeContained=sum(TriviallyContained, 2)[1]
+      IsSomeContained = sum(TriviallyContained, 2)[1]
 
-      if IsSomeContained == 2 # The simplices coincide
-        IntVol = abs(O1)
+      if IsSomeContained == 2.0 # The simplices coincide
+        IntVol = abs(orientation_S1)
       elseif IsSomeContained == 1.0 # One simplex is contained in the other
         if TriviallyContained[1] == 1.0 # Simplex1 is contained in Simplex2
           IntVol = abs(orientation_S1)
-        else# Simplex2 is contained in Simplex1
+        else # Simplex2 is contained in Simplex1
           IntVol = abs(orientation_S2)
         end
-      else# No simplex contains the other
+      else # No simplex contains the other
 
         Ncomm, ordered_vertices1, ordered_vertices2 = SharedVertices(ConvexExp1in2,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1)
 
@@ -135,13 +124,23 @@ function simplexintersection(S1, S2, ;tolerance::Float64 = 1/10^10, what = "volu
     end
   end
 
-  if what == "volume"
-    return IntVol[1]
-  elseif what == "vertices"
-    return IntVert
-  elseif what == "both"
-    return IntVol[1], IntVert
-  end
+  #if what == "volume"
+  #  return IntVol[1]
+  #elseif what == "vertices"
+  #  return IntVert
+  #elseif what == "both"
+  #  return IntVol[1], IntVert
+  #end
+  return IntVol
 end
 
 end # module
+
+
+function transp(n)
+  s = [0 1 0 0; 0 0 1 0; 0 0 0 1]
+
+  for i = 1:n
+    s = s.'
+  end
+end
