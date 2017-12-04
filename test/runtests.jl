@@ -107,5 +107,3 @@ Y19 =   [0.338291 0.341191 0.117 0.288399;
         @test simplexintersection(X8, Y8, what = "volume") ≈ 0.029062035528103 atol = approxtol
         @test simplexintersection(X9, Y9, what = "volume") ≈ 0.010081146644461 atol = approxtol
 end;
-
-simplexintersection(X10, Y10, what = "volume")
