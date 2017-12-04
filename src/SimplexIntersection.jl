@@ -58,12 +58,12 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
   # Centroid and radii
   c1 = Circumsphere(S1)[2:n+1]
   c2 = Circumsphere(S2)[2:n+1]
-  r1 = Circumsphere(S1)[1]
-  r2 = Circumsphere(S2)[1]
+  r1::Float64 = Circumsphere(S1)[1]
+  r2::Float64 = Circumsphere(S2)[1]
 
   # Orientation of simplices
-  orientation_S1 = det([ones(1, n + 1); S1])
-  orientation_S2 = det([ones(1, n + 1); S2])
+  orientation_S1::Float64 = det([ones(1, n + 1); S1])
+  orientation_S2::Float64 = det([ones(1, n + 1); S2])
 
   # Set volume to zero and intersection vertices to an empty array initially
   # Change only if there is intersection
@@ -75,13 +75,13 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
 
   # If the (distance between centroids)^2-(sum of radii)^2 < 0,
   # then the simplices intersect in some way.
-  dist_difference = (transpose(c1 - c2) * (c1 - c2) - (r1 + r2)^2)[1]
+  dist_difference::Float64 = ((c1 - c2).' * (c1 - c2) - (r1 + r2)^2)[1]
 
-  if (dist_difference < 0)
+  if dist_difference < 0
     # Find the number of points of each simplex contained within the
     # circumsphere of the other simplex
-    Index1in2, numof1in2 = InsideCircum(S1, r2, c2, n)
-    Index2in1, numof2in1 = InsideCircum(S2, r1, c1, n)
+    Index1in2::Vector{Int}, numof1in2::Int = InsideCircum(S1, r2, c2, n)
+    Index2in1::Vector{Int}, numof2in1::Int = InsideCircum(S2, r1, c1, n)
 
     # ------------------------------------------------------------------------
     # At least one circumsphere contains vertices of the other simplex
@@ -90,11 +90,20 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
       commonvertices = CommonVertices(copy(S1), copy(S2), Index1in2, Index2in1,
                                       numof1in2, numof2in1, n)
 
-      Ncomm = commonvertices[1]             # Number of common vertices
-      InternalComIndex1 = commonvertices[2] # Indices in the vector Index1in2 of the indices corresponding to the contained vertices
-      InternalComIndex2 = commonvertices[3] # Indices in the vector Index2in1 of the indices cooresponding to the contained vertices
-      IndexComVert1 = commonvertices[4]     # Indices of common vertices for simplex S1
-      IndexComVert2 = commonvertices[5]     # Indices of common vertices for simplex S1
+      # Number of common vertices
+      Ncomm::Int = commonvertices[1]
+
+      # Indices in the vector Index1in2 of the indices corresponding to the contained vertices
+      InternalComIndex1::Vector{Int} = commonvertices[2]
+
+      # Indices in the vector Index2in1 of the indices cooresponding to the contained vertices
+      InternalComIndex2::Vector{Int}  = commonvertices[3]
+
+      # Indices of common vertices for simplex S1
+      IndexComVert1::Vector{Int}  = commonvertices[4]
+
+      # Indices of common vertices for simplex S1
+      IndexComVert2::Vector{Int}  = commonvertices[5]
 
       # -------------------------------------
       # The simplices coincide
@@ -128,14 +137,14 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
         # ----------------------
         # S1 is contained in S2
         # ----------------------
-        if (numof1in2NotCom + Ncomm == n + 1)
+        if numof1in2NotCom + Ncomm == n + 1
           IntVert = S1
           IntVol = abs(orientation_S1)
 
         # ----------------------
         # S2 is contained in S1
         # ----------------------
-        elseif (numof2in1NotCom + Ncomm == n + 1)
+        elseif numof2in1NotCom + Ncomm == n + 1
           IntVert = S2
           IntVol = abs(orientation_S2)
 
@@ -143,14 +152,18 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
         # Intersection is more complex
         # -----------------------------
         else
-          Vert1Inside2 = VerticesInside(InfoVertices1in2, numof1in2NotCom, IndexComVert1,
-                                        IndexComVert2, n, Ncomm)
-          Vert2Inside1 = VerticesInside(InfoVertices2in1, numof2in1NotCom, IndexComVert2,
-                                        IndexComVert1, n, Ncomm)
-          Vert1Outside2 = VerticesOutside(S2, S1, InfoVertices1in2, numof1in2NotCom,
-                              All1in2, orientation_S2, tolerance, n, Ncomm, IndexComVert1)
-          Vert2Outside1 = VerticesOutside(S1, S2, InfoVertices2in1, numof2in1NotCom,
-                              All2in1, orientation_S1, tolerance, n, Ncomm, IndexComVert2)
+          Vert1Inside2::Vector{Int} = VerticesInside(InfoVertices1in2, numof1in2NotCom,
+                                                    IndexComVert1, IndexComVert2, n, Ncomm)
+          Vert2Inside1::Vector{Int} = VerticesInside(InfoVertices2in1, numof2in1NotCom,
+                                                    IndexComVert2, IndexComVert1, n, Ncomm)
+          Vert1Outside2::Vector{Int} = VerticesOutside(S2, S1, InfoVertices1in2,
+                                                    numof1in2NotCom, All1in2,
+                                                    orientation_S2, tolerance, n, Ncomm,
+                                                    IndexComVert1)
+          Vert2Outside1::Vector{Int} = VerticesOutside(S1, S2, InfoVertices2in1,
+                                                    numof2in1NotCom, All2in1,
+                                                    orientation_S1, tolerance, n, Ncomm,
+                                                    IndexComVert2)
 
           IntVert, ConvexExpIntVert = IntersectingBoundaries(S1, S2,
                                                               Vert1Inside2, Vert2Inside1,
@@ -169,7 +182,11 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
           end
         end
       end
+    else
+      IntVert = []
     end
+  else
+    IntVert = []
   end
 
   if what == "volume"
