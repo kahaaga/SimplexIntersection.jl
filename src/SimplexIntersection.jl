@@ -152,15 +152,15 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
         # Intersection is more complex
         # -----------------------------
         else
-          Vert1Inside2::Vector{Int} = VerticesInside(InfoVertices1in2, numof1in2NotCom,
+          Vert1Inside2 = VerticesInside(InfoVertices1in2, numof1in2NotCom,
                                                     IndexComVert1, IndexComVert2, n, Ncomm)
-          Vert2Inside1::Vector{Int} = VerticesInside(InfoVertices2in1, numof2in1NotCom,
+          Vert2Inside1 = VerticesInside(InfoVertices2in1, numof2in1NotCom,
                                                     IndexComVert2, IndexComVert1, n, Ncomm)
-          Vert1Outside2::Vector{Int} = VerticesOutside(S2, S1, InfoVertices1in2,
+          Vert1Outside2 = VerticesOutside(S2, S1, InfoVertices1in2,
                                                     numof1in2NotCom, All1in2,
                                                     orientation_S2, tolerance, n, Ncomm,
                                                     IndexComVert1)
-          Vert2Outside1::Vector{Int} = VerticesOutside(S1, S2, InfoVertices2in1,
+          Vert2Outside1 = VerticesOutside(S1, S2, InfoVertices2in1,
                                                     numof2in1NotCom, All2in1,
                                                     orientation_S1, tolerance, n, Ncomm,
                                                     IndexComVert2)
