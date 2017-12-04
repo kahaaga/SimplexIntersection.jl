@@ -1,5 +1,3 @@
-include("ConvexExpAndIntVert.jl")
-
 function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,IndexVert1,IndexVert2,Beta1in2,Beta2in1,tolerance)
     n = size(X, 1)
     N = size(BoundaryBinaryLabels1, 1)

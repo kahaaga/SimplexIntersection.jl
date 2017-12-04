@@ -1,4 +1,3 @@
-include("qhull.jl")
 using .QHull.delaunay_tesselation
 
 

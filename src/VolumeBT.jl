@@ -42,5 +42,5 @@ function VolumeBT(polytope, convex_expansion_polytopevertices, n)
     IntVol = [0]
   end
 
-  return IntVol
+  return IntVol[1]
 end

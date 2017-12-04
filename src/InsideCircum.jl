@@ -1,6 +1,3 @@
-include("Circumsphere.jl")
-include("heaviside.jl")
-
 function InsideCircum(S, r, C, n)
 
     C = repmat(C, 1, n + 1)
