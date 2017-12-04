@@ -93,17 +93,18 @@ Y19 =   [0.338291 0.341191 0.117 0.288399;
         0.416521 0.412559 0.341191 0.464648;
         0.264743 0.274673 0.412559 0.125069]
 
+using SimplexIntersection
 @testset "simplexintersection: compare with matlab" begin
-        @test simplexintersection(X1, Y1, what = "volume") ≈ 0.00059113 atol = approxtol
-        @test simplexintersection(X4, Y4, what = "volume") ≈ 0.271468970913881 atol = approxtol
-        @test simplexintersection(X5, Y5, what = "volume") ≈ 0.371760204081633 atol = approxtol
-        @test simplexintersection(X6, Y6, what = "volume") ≈ 2.346911657841576 atol = approxtol
-        @test simplexintersection(X7, Y7, what = "volume") ≈  1.224294204983859 atol = approxtol
-        @test simplexintersection(X11, Y11, what = "volume") ≈ 0 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X1, Y1, what = "volume") ≈ 0.00059113 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X4, Y4, what = "volume") ≈ 0.271468970913881 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X5, Y5, what = "volume") ≈ 0.371760204081633 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X6, Y6, what = "volume") ≈ 2.346911657841576 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X7, Y7, what = "volume") ≈  1.224294204983859 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X11, Y11, what = "volume") ≈ 0 atol = approxtol
 
-        @test simplexintersection(X10, Y10, what = "volume") ≈ 0.0002709969231403119 atol = approxtol
-        @test simplexintersection(X19, Y19, what = "volume") ≈ 0.000000283415912320120 atol = approxtol
-        @test simplexintersection(X2, Y2, what = "volume") ≈ 0.010081146644461 atol = approxtol
-        @test simplexintersection(X8, Y8, what = "volume") ≈ 0.029062035528103 atol = approxtol
-        @test simplexintersection(X9, Y9, what = "volume") ≈ 0.010081146644461 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X10, Y10, what = "volume") ≈ 0.0002709969231403119 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X19, Y19, what = "volume") ≈ 0.000000283415912320120 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X2, Y2, what = "volume") ≈ 0.010081146644461 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X8, Y8, what = "volume") ≈ 0.029062035528103 atol = approxtol
+        @test SimplexIntersection.simplexintersection(X9, Y9, what = "volume") ≈ 0.010081146644461 atol = approxtol
 end;
