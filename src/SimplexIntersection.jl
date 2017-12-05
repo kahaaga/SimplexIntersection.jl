@@ -116,7 +116,7 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2};
       # The simplices share a face
       # -------------------------------------
       elseif Ncomm == n
-        IntVol = ShareFace_nD(S1, S2, IndexComVert1, IndexComVert2,
+        IntVol, IntVert = ShareFace_nD(S1, S2, IndexComVert1, IndexComVert2,
                               orientation_S1, orientation_S2, tolerance)
 
       # -------------------------------------

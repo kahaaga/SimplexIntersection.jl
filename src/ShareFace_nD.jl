@@ -24,11 +24,8 @@ Returns
 -------
 intersecting_volume::Float64                   The intersection between the simplices.
 """
-
 function ShareFace_nD(Reference_Simplex, Target_Simplex, IndexComVert_Reference,
     IndexComVert_Target, O_Reference, O_Target, tolerance)
-    #println("ShareFace_nD")
-    #println("\t\t\tShareFace_nd()\n")
 
     # IndexComvert_Reference and IndexComvert_Target are ordered such that they correspond to the same points
     n = size(Reference_Simplex, 1)
@@ -39,13 +36,9 @@ function ShareFace_nD(Reference_Simplex, Target_Simplex, IndexComVert_Reference,
     # Array of dimensions 1x1.  Index of the vertex NOT shared by the two simplices for the reference simplex (all other vertices are shared because they form the shared face)
     IndexExtra_Target = complementary(IndexComVert_Target, n + 1)
 
-
     # Convex expansion of the extra index of Reference_Simplex in terms of the
     # vertices of Target_Simplex. Array of dimensions 1x(n+1)
     ConvexExpansion_Reference = zeros(1, n + 1)
-
-    #@show Reference_Simplex
-    #@show Target_Simplex
 
     # Take the extra vertex of the reference simplex and express it as a linear convex
     # combination of the vertices of the target simplex.
@@ -71,19 +64,18 @@ function ShareFace_nD(Reference_Simplex, Target_Simplex, IndexComVert_Reference,
 
     if ConvexExpansion_Reference[IndexExtra_Target][1] >= 0
         # S1 is contained in S2
+
         if minimum_coefficient >= 0
-            #println("S1 is contained in S2")
             IntVol = abs(O_Reference)
+            IntVert = Reference_Simplex
 
         # S2 is contained in S1
-        elseif maximum_coeff_n <= 0
-            #println("S2 is contained in S1")
-            IntVol = abs(O_Target)
 
+        elseif maximum_coeff_n <= 0
+            IntVol = abs(O_Target)
+            IntVert = Target_Simplex
         # S1 and S2 intersect non-trivially, such that the intersection is a new simplex.
         else
-            #println("S1 and S2 intersect non-trivially")
-
             negativeCoeff = heaviside(-ConvexExpansion_Reference[IndexComVert_Target]).' # row vector
             NegativeIndices = round.(Int64, negativeCoeff .* IndexComVert_Target.') # row vector
 
@@ -99,14 +91,17 @@ function ShareFace_nD(Reference_Simplex, Target_Simplex, IndexComVert_Reference,
             # Should be a vertex (collumn vectof) MY PRECIOUS
             IntPoint = Target_Simplex[:, vec([NonNegativeIndices IndexExtra_Target].')] * TargetCoefficients.'
 
-
-            IntVert = transpose([Target_Simplex[:, IndexComVert_Target] IntPoint])
+            IntVert = [Target_Simplex[:, IndexComVert_Target] IntPoint].'
 
             IntVol = abs(det([ones(n + 1, 1) IntVert]))
         end
+
     # The simplices only have the shared face in common, so they have no shared volume.
+
     else
         IntVol = 0
+        IntVert = []
     end
-    return IntVol
+
+    return IntVol, IntVert
 end
