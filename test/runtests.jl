@@ -108,10 +108,3 @@ using SimplexIntersection
         @test SimplexIntersection.simplexintersection(X8, Y8, what = "volume") ≈ 0.029062035528103 atol = approxtol
         @test SimplexIntersection.simplexintersection(X9, Y9, what = "volume") ≈ 0.010081146644461 atol = approxtol
 end;
-
-SimplexIntersection.simplexintersection(X4, Y4, what = "vertices")
-SimplexIntersection.simplexintersection(X5, Y5, what = "vertices")
-SimplexIntersection.simplexintersection(X6, Y6, what = "vertices")
-
-SimplexIntersection.simplexintersection(X1, Y1, what = "both")
-plot_simplices(X1, Y1)
