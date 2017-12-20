@@ -1,17 +1,11 @@
 module SimplexIntersection
 export simplexintersection
 
-include("CommonVertices.jl")
-include("NonCommonVertices.jl")
+include("Circumsphere.jl")
 include("barycentric-coordinates.jl")
-include("ContainedVertices.jl")
 include("ShareFace_nD.jl")
 include("geometry.jl")
 include("heaviside.jl")
-include("VerticesInside.jl")
-include("VerticesOutside.jl")
-include("Circumsphere.jl")
-include("InsideCircum.jl")
 include("complementary.jl")
 include("InfoVerticesOutside.jl")
 include("intersection-of-boundaries.jl")
@@ -52,21 +46,19 @@ Returns
 function simplexintersection(S1::Array{Float64}, S2::Array{Float64}; tolerance::Float64 = 1/10^10, what = "volume")
 
   # Dimension
-  n = size(S1, 1)
+  const n = size(S1, 1)
 
   # Centroid and radii
-  c1 = Circumsphere(S1)[2:n+1]
-  c2 = Circumsphere(S2)[2:n+1]
-  r1 = Circumsphere(S1)[1]
-  r2 = Circumsphere(S2)[1]
+  const c1 = Circumsphere(S1)[2:n+1]
+  const c2 = Circumsphere(S2)[2:n+1]
+  const r1 = Circumsphere(S1)[1]
+  const r2 = Circumsphere(S2)[1]
 
   # Orientation of simplices
-  orientation_S1 = det([ones(1, n + 1); S1])
-  orientation_S2 = det([ones(1, n + 1); S2])
+  const orientation_S1 = det([ones(1, n + 1); S1])
+  const orientation_S2 = det([ones(1, n + 1); S2])
 
-  if abs(orientation_S1) < tolerance
-    return 0
-  elseif abs(orientation_S2) < tolerance
+  if abs(orientation_S1) < tolerance || abs(orientation_S2) < tolerance
     return 0
   end
 
@@ -80,7 +72,7 @@ function simplexintersection(S1::Array{Float64}, S2::Array{Float64}; tolerance::
 
   # If the (distance between centroids)^2-(sum of radii)^2 < 0,
   # then the simplices intersect in some way.
-  dist_difference = ((c1 - c2).' * (c1 - c2) - (r1 + r2)^2)[1]
+  dist_difference::Float64 = ((c1 - c2).' * (c1 - c2) - (r1 + r2)^2)[1]
 
   if dist_difference < 0
     # Find the number of points of each simplex contained within the
