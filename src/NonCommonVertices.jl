@@ -27,19 +27,22 @@ function NonCommonVertices(InternalComIndex,IndexIn,
   # Nin: number of vertices in the circumsphere
 
   # OUTCOME
-
+  @show n_vertices_in_circumsphere
+  @show n_commonvertices
+  @show IndexIn
+  @show InternalComIndex
   # Res: indices of the non common vertices still inside the circumsphere
   # if Res is empty, it returns 0
   if n_commonvertices == 0
     #println("n_commonvertices == 0")
-    return(IndexIn)
+    return IndexIn
   else
       if n_commonvertices == n_vertices_in_circumsphere
         #println("Number of vertices in circumsphere equals number of common vertices")
         return [0]
       else
         #println("Number of vertices in circumsphere does not equal number of common vertices")
-        return(IndexIn[complementary(InternalComIndex,n_vertices_in_circumsphere)])
+        return IndexIn[complementary(InternalComIndex, n_vertices_in_circumsphere)]
      end
  end
 
