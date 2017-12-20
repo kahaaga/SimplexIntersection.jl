@@ -37,7 +37,7 @@ function convexhull{T<:Real}(points::Array{T})
 end
 
 function delaunay_tesselation{T<:Real}(points::Array{T})
-    py = spatial[:Delaunay](points, furthest_site = true, qhull_options = ["Qt Qbb Qc Qx"])
+    py = spatial[:Delaunay](points, furthest_site = true, qhull_options = ["Qt Qbb Qc Qx QJ"])
     points = convert(Array{T}, py["points"])
 
     # Get simplices forming the triangulation
