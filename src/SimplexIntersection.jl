@@ -49,7 +49,7 @@ Returns
 -------
 """
 
-function simplexintersection(S1::Array{Float64}, S2::Array{Float64}, ;tolerance::Float64 = 1/10^10, what = "volume")
+function simplexintersection(S1::Array{Float64}, S2::Array{Float64}; tolerance::Float64 = 1/10^10, what = "volume")
 
   # Dimension
   n = size(S1, 1)
@@ -63,6 +63,12 @@ function simplexintersection(S1::Array{Float64}, S2::Array{Float64}, ;tolerance:
   # Orientation of simplices
   orientation_S1 = det([ones(1, n + 1); S1])
   orientation_S2 = det([ones(1, n + 1); S2])
+
+  if abs(orientation_S1) < tolerance
+    return 0
+  elseif abs(orientation_S2) < tolerance
+    return 0
+  end
 
   # Set volume to zero initially. Change only if there is intersection
   IntVol = 0
@@ -134,13 +140,4 @@ function simplexintersection(S1::Array{Float64}, S2::Array{Float64}, ;tolerance:
   return IntVol
 end
 
-end # module
-
-
-function transp(n)
-  s = [0 1 0 0; 0 0 1 0; 0 0 0 1]
-
-  for i = 1:n
-    s = s.'
-  end
-end
+end #module
