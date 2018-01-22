@@ -30,7 +30,7 @@ include("SimplexChecks.jl")
 include("volume-computation.jl")
 include("shared-vertices.jl")
 include("simplexoperations.jl")
-include("nd_test.jl")
+
 """
     SimplexIntersection()
 
@@ -140,5 +140,5 @@ export simplexintersection,
         outsidepoints, insidepoints,
         issingular,
         radius, centroid, orientation, volume,
-            Circumsphere, nontrivially_intersecting_simplices, simplices_sharing_vertices, intersecting_simplices, nd_Test
+            Circumsphere, nontrivially_intersecting_simplices, simplices_sharing_vertices, intersecting_simplices
 end #module
