@@ -35,7 +35,8 @@ function QR(Gamma, tolerance)
       # R is an upper triangular matrix of dimension m x n
       R = triu(qr_decomposition)
 
-     #diagonal is a column vector with dimension either n-1 (if m=n-1) or n (if m>=n)
+      # diagonal is a column vector with dimension either n-1 (if m=n-1) or n (if m>=n)
+      # Set entries that are too small relative to `tolerance` to zero.
       diagonal = heaviside(tolerance - abs.(diag(R)))
       index = round.(Int, collect(1:min(m, n)).' * diagonal)[1]
 
@@ -46,6 +47,7 @@ function QR(Gamma, tolerance)
          #the index-th entry in diag(R) is zero
          index = index - 1
       end
+
       lambda = zeros(n, 1)
       lambda[1:index] = - R[1:index, 1:index] \ R[1:index, index + 1] # A\b means inv(A)*b
       lambda[index + 1] = 1

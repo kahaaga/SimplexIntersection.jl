@@ -1,97 +1,27 @@
-using SimplexIntersection
-using SimplexSplitting
+include("nd_test_function.jl")
+include("intersectiontest_funs.jl")
 
-# Splits a canonical simplex of dimension E with size division factor k. Inside the simplex,
-# it generates a random subsimplex. Compute its volume by computing the intersection of
-# that simplex with the simplices forming the splitting of the original simplex. Compare
-# the volume obtained by the simplex intersection routine to the analytical volume.
-# N is the number of times to perform the test, and tolerance is the usual tolerance in the
-# simplex intersection routine.
-function nd_Test(k, E, N; tolerance = 1/10^12, plot = false)
-
-
-    # Define vertices of canonical simplex
-    canonical_simplex_vertices = zeros(E + 1, E)
-    canonical_simplex_vertices[2:(E+1), :] = eye(E)
-    canonical_simplex_radius = sqrt(E^2 + E - 1)/(E + 1)
-    canonical_simplex_centroid = ones(E) / (E + 1)
-
-    simplex_indices = zeros(Int, 1, E + 1)
-    simplex_indices[1, :] = round.(Int, collect(1:E+1))
-
-    refined = refine_triangulation(canonical_simplex_vertices, simplex_indices, [1], k)
-    triang_vertices, triang_simplex_indices = refined[1], refined[2]
-    centroids, radii = centroids_radii2(triang_vertices, triang_simplex_indices)
-
-    differences = Vector{Float64}(N)
-
-    # Repeat the test N times
-    for i = 1:N
-        # Build convex expansion coefficients for the random simplex. We need these in a
-        # form that guarantees that the random simplex lies within the canonical simplex.
-        beta = rand(E + 1, E + 1)
-        beta = beta .* repmat(1 ./ sum(beta, 2), 1, E + 1)
-        # Ensure that we have convex expansions
-        #assert(sum(beta, 1) .== 1.0)
-
-        # Linear combination of the original vertices and the convex expansion coefficients.
-        # Creates a matrix containing the vertices of the random simplex (which now is
-        # guaranteed to lie _within_ the original simplex.
-        random_simplex = (beta * canonical_simplex_vertices)
-
-
-        #circ = Circumsphere(random_simplex.')
-        #random_simplex_radius = circ[1]
-        #random_simplex_centroid = circ[2:end]
-        random_simplex_orientation = det(hcat(ones(E + 1), random_simplex))
-        random_simplex_volume = abs(random_simplex_orientation)
-
-        random_simplex = random_simplex.'
-
-        #if plot
-        #    p = plot_simplex_and_triangulation(random_simplex, triang_vertices, triang_simplex_indices)
-        #    return p
-        #end
-
-        # Intersection between each of the subsimplices with the random simplex
-        intersecting_volumes = Vector{Float64}(size(triang_simplex_indices, 1))
-
-        for j = 1:size(triang_simplex_indices, 1)
-            # Get the subsimplex vertices
-            subsimplex = triang_vertices[triang_simplex_indices[j, :], :].'
-            intvol = SimplexIntersection.simplexintersection(random_simplex, subsimplex,
-                                                    tolerance = tolerance, what = "volume")
-            intersecting_volumes[j] = intvol
-        end
-
-        # Compute the discrepancies
-        numeric_volume = sum(intersecting_volumes)
-        analytic_volume = random_simplex_volume
-
-        #discrepancies[i] = abs(numeric_volume - analytic_volume)/analytic_volume
-        differences[i] = abs(numeric_volume - analytic_volume)
-        if differences[i] > tolerance
-            print("shit")
-            #p = plot_simplex_and_triangulation(random_simplex, triang_vertices, triang_simplex_indices)
-        #    return random_simplex, triang_vertices, triang_simplex_indices, numeric_volume, analytic_volume, differences
-        end
-    end
-    return differences
-end
-
-@testset "nD discrepancy test" begin
-    @testset "E = $E" for E in 2:5
-        @testset "k = $k" for k in 2:2
-            # Trigger once for precompilation
-
-            discrepancies = nd_Test(2, 4, 10)
-            @test maximum(discrepancies) < 1/10^10
-        end
+reps = 100
+function init()
+    for i = 2:6
+        nd_Test(i, 2, 1)
     end
 end
 
-#function test_intersection(s1, s2)
-#    intvol = simplexintersection(s1, s2)
-#    print("Intersecting volume = ", intvol[1])
-#    plot_simplices(s1, s2)
-#end
+k = 2
+
+@testset "nD discrepancy: strictly contained" begin
+    init()
+    println("nD discrepancy test with ", reps, " reps:")
+    Es = 2:8
+    @testset "E = $E" for E in 1:length(Es)
+        # Trigger once for precompilation
+
+        t1 = time_ns()/10^9
+        discrepancies = nd_Test(Es[E], k, reps)
+        t2 = time_ns()/10^9
+        elapsed =  t2 - t1
+        println("E = ", Es[E], " | ", (k^Es[E]), " possible intersections.\t| Max discrepancy: ", maximum(discrepancies), " | Per intersection: ", elapsed/reps/(k^Es[E])*10^3, " ms | Total time for one triangulation: ", elapsed/reps*10^3, " ms | total time: ", elapsed, "seconds")
+        @test maximum(discrepancies) < 1/10^10
+    end
+end
