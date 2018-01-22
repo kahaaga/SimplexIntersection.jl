@@ -1,25 +1,26 @@
 include("ConvexExpAndIntVert.jl")
 
-function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,IndexVert1,IndexVert2,Beta1in2,Beta2in1,tolerance)
+function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,IndexVert1,IndexVert2,β₁in₂,β₂in₁,tolerance)
     n = size(X, 1)
     N = size(BoundaryBinaryLabels1, 1)
 
     ConvexExpIntVert = 0
-    BoundaryVertexIndices1 = BoundaryBinaryLabels1 .* repmat(transpose(collect(1:n+1)), N)
-    BoundaryVertexIndices2 = BoundaryBinaryLabels2 .* repmat(transpose(collect(1:n+1)), N)
+    # Both of the following should be Array{Int, 2}
+    # Both of the following should be Array{Int, 2}
+    BoundaryVertexIndices1 = BoundaryBinaryLabels1 .* repmat(collect(1:n+1).', N)
+    BoundaryVertexIndices2 = BoundaryBinaryLabels2 .* repmat(collect(1:n+1).', N)
     SearchingIndex = collect(1:N)
-    NonZeroSearchingIndex = copy(SearchingIndex)
+    NonZeroSearchingIndex = collect(1:N)
     IntVert = 0
 
     for a = 1:N
         if SearchingIndex[a] > 0
-            IntIndexVertB1 = transpose(find(BoundaryVertexIndices1[a, :]))
-            IntIndexVertB2 = transpose(find(BoundaryVertexIndices2[a, :]))
+            IntIndexVertB1 = find(BoundaryVertexIndices1[a, :]).'
+            IntIndexVertB2 = find(BoundaryVertexIndices2[a, :]).'
             #Indices of the vertices of the boundaries in the order given by IndexVert1
             #and IndexVert2, respectively
             IndexVertB1 = IndexVert1[IntIndexVertB1]
             IndexVertB2 = IndexVert2[IntIndexVertB2]
-
 
             #Indices of the vertices of the boundaries in the order given by X and Y, respectively
             r = size(IndexVertB1, 1)
@@ -27,14 +28,14 @@ function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,Index
             TargetVertices = copy(Y)
             ReferenceBoundary = copy(IndexVertB1)
             TargetBoundary = copy(IndexVertB2)
-            beta = Beta2in1
+            β = β₂in₁
             Switch = 0
 
             if r < s
                 TargetVertices = copy(X)
                 ReferenceBoundary = copy(IndexVertB2)
                 TargetBoundary = copy(IndexVertB1)
-                beta = Beta1in2
+                β = β₁in₂
                 aux = copy(r)
                 r = s
                 s = aux
@@ -44,23 +45,22 @@ function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,Index
             ExtraIndices = complementary(ReferenceBoundary, n + 1)
 
             # A matrix
-            Gamma = beta[vec(ExtraIndices), vec(TargetBoundary)]
+            Gamma = β[vec(ExtraIndices), vec(TargetBoundary)]
             Rank = rank(Gamma)
             Rank0 = rank([Gamma; ones(1, s)])
 
             aux = minimum(ones(1, size(Gamma, 1)) * (Gamma .^2))
 
             if (Rank0 - Rank == 1 && Rank == s - 1 && aux > 0)
-                lambda = QR(Gamma, tolerance)
-                alpha = zeros(r, s)
-                alpha[2:r, :] = beta[ReferenceBoundary[2:r], TargetBoundary]
-                alpha[1, :] = 1 - ones(1, r - 1) * alpha[2:r, :]
-                alpha = alpha * lambda
+                λ = QR(Gamma, tolerance)
+                α = zeros(r, s)
+                α[2:r, :] = β[ReferenceBoundary[2:r], TargetBoundary]
+                α[1, :] = 1 - ones(1, r - 1) * α[2:r, :]
+                α = α * λ
 
                 # A column vector
-                alpha = alpha .* heaviside(abs.(alpha) - tolerance)
-                aux = minimum([minimum(alpha) minimum(lambda)])
-                Aux = size(find(alpha), 1)
+                α = α .* heaviside(abs.(α) - tolerance)
+                Aux = size(find(α), 1)
 
                 #if some of this coefficients are negative the boundaries simply do
                 #not intersect.
@@ -68,16 +68,18 @@ function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,Index
                 #computed or will be computed as the intersection of minimal
                 #boundaries.
                 #This also rules out duplication of points
+                aux = min(minimum(α), minimum(λ))
+
                 if aux >= 0
                     NonZeroSearchingIndex = UpdateNonZeroSearchingIndex(NonZeroSearchingIndex, a)
-                    NonZeroSearchingIndex, SearchingIndex = MinimalBoundaries(Switch, aux, alpha, lambda, IntIndexVertB1, IntIndexVertB2, BoundaryBinaryLabels1, BoundaryBinaryLabels2, NonZeroSearchingIndex, SearchingIndex)
+                    NonZeroSearchingIndex, SearchingIndex = MinimalBoundaries(Switch, aux, α, λ, IntIndexVertB1, IntIndexVertB2, BoundaryBinaryLabels1, BoundaryBinaryLabels2, NonZeroSearchingIndex, SearchingIndex)
                     if (Aux > 1)
 
                         # Calculate the new point. Also, check if the new point is so close to
                         # some other point that they are practically indistinguishable. If
                         # so, disregard it.
 
-                        NewPoint = TargetVertices[:, vec(TargetBoundary)] * lambda
+                        NewPoint = TargetVertices[:, vec(TargetBoundary)] * λ
 
                         point_already_exists = false
                         if !(IntVert == 0)
@@ -89,9 +91,9 @@ function BoundaryxBoundary(X,Y,BoundaryBinaryLabels1,BoundaryBinaryLabels2,Index
                         end
 
                         if !point_already_exists
-                            IntVert,ConvexExpIntVert = ConvexExpAndIntVert(IntVert, transpose(NewPoint), transpose(alpha), transpose(lambda), ReferenceBoundary, TargetBoundary, Switch, ConvexExpIntVert, n)
+                            IntVert,ConvexExpIntVert = ConvexExpAndIntVert(IntVert, NewPoint.', α.', λ.', ReferenceBoundary, TargetBoundary, Switch, ConvexExpIntVert, n)
                         end
-
+                        
                     end
                 end
             end

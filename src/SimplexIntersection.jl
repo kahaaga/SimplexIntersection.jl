@@ -1,5 +1,6 @@
 module SimplexIntersection
-export simplexintersection
+
+using SimplexSplitting
 
 include("Circumsphere.jl")
 include("barycentric-coordinates.jl")
@@ -28,6 +29,8 @@ include("TriangulationNonSimplicialFaces.jl")
 include("SimplexChecks.jl")
 include("volume-computation.jl")
 include("shared-vertices.jl")
+include("simplexoperations.jl")
+include("nd_test.jl")
 """
     SimplexIntersection()
 
@@ -43,7 +46,7 @@ Returns
 -------
 """
 
-function simplexintersection(S1::Array{Float64}, S2::Array{Float64}; tolerance::Float64 = 1/10^10, what = "volume")
+function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2}; tolerance::Float64 = 1/10^10, what = "volume")
 
   # Dimension
   const n = size(S1, 1)
@@ -132,4 +135,10 @@ function simplexintersection(S1::Array{Float64}, S2::Array{Float64}; tolerance::
   return IntVol
 end
 
+export simplexintersection,
+        childsimplex,
+        outsidepoints, insidepoints,
+        issingular,
+        radius, centroid, orientation, volume,
+            Circumsphere, nontrivially_intersecting_simplices, simplices_sharing_vertices, intersecting_simplices, nd_Test
 end #module
