@@ -4,25 +4,16 @@ using SimplexSplitting
 
 include("Circumsphere.jl")
 include("barycentric-coordinates.jl")
-include("ShareFace_nD.jl")
 include("geometry.jl")
 include("heaviside.jl")
 include("complementary.jl")
-include("InfoVerticesOutside.jl")
 include("intersection-of-boundaries.jl")
 include("some-vertex-in-circumsphere.jl")
-include("ConvexExpansion.jl")
 include("Binary.jl")
-include("BoundaryxBoundary.jl")
 include("sharing-a-face.jl")
 include("QR.jl")
-include("UpdateNonZeroSearchingIndex.jl")
-include("MinimalBoundaries.jl")
-include("ConvexExpAndIntVert.jl")
 include("Update.jl")
-include("IntersectingOfPolytopeVertices.jl")
 include("polytope-generating-vertices.jl")
-include("VolumeBT.jl")
 include("TriangulationPolytopeFaces.jl")
 include("NullSpace.jl")
 include("TriangulationNonSimplicialFaces.jl")
@@ -111,10 +102,12 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2}; toler
           IntVol = SharingAFace(S2, ConvexExp1in2, ordered_vertices1, ordered_vertices2)
 
         else # The simplices do not share a face.
-          IntVert, ConvexExpIntVert  = IntersectionOfBoundaries(S1,S2,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm,tolerance);
-          dim = size(IntVert, 2)
-
-          if dim > 1
+          #IntVert, ConvexExpIntVert  = IntersectionOfBoundaries_Eff(S1,S2,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm,tolerance)
+          IntVert, ConvexExpIntVert  = IntersectionOfBoundaries(S1,S2,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm,tolerance)
+          #dim = size(IntVert, 2)
+          #@show IntVert, ConvexExpIntVert
+          if !isempty(IntVert)
+          #if dim > 1
             IntVert,ConvexExpIntVert = PolytopeGeneratingVertices(S1,S2,IntVert,ConvexExpIntVert,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm);
             IntVol = VolumeComputation(IntVert, ConvexExpIntVert)
           end
@@ -137,7 +130,8 @@ end
 
 export simplexintersection,
         childsimplex,
-        outsidepoints, insidepoints,
+         SomeVertexInCircumsphere,BarycentricCoordinates,heaviside0,
+        SharedVertices,SharingAFace,IntersectionOfBoundaries,PolytopeGeneratingVertices,VolumeComputation, Circumsphere,
         issingular,
         radius, centroid, orientation, volume,
             Circumsphere, nontrivially_intersecting_simplices, simplices_sharing_vertices, intersecting_simplices
