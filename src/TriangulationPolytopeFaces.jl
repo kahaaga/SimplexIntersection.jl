@@ -1,113 +1,139 @@
-function TriangulationPolytopeFaces(ConvexExpIntVert, dim, n)
-    TriangNSFaces = 0
-    TriangAllPolytopeFaces = 0
+"""
+    Triangulate the polytope faces.
 
-    FacesContainingIntVert = heaviside0(-ConvexExpIntVert)
-    # transforms any zero convex parameter into 1 and any positive convex
-    # parameter into 0.
+`βs` is an npoints-by-(2*dim + 2) dimensional array of convex expansion coefficients of the
+polytope generators (vertices) in terms of the original simplices s₁ and s₂. The first
+(dim + 1) columns correspond to s₁, while the remaining (dim + 1) columns correspond to s₂.
 
-    NumofIntPointsInEachFace = round.(Int64, ones(1, dim) * FacesContainingIntVert)
-    # array of dimension 1 x 2*n+2
-    PolytopeFacesIndices = transpose(heaviside0(NumofIntPointsInEachFace - n)) .* (1:2*n+2)
-    PolytopeFacesIndices = vec(find(PolytopeFacesIndices))
+`n` is the the dimension of the space, and `dim` number of generators of the polytope.
+"""
+function TriangulationPolytopeFaces(βs::Array{Float64, 2}, n_generators::Int, dim::Int)
+    # We adopt the notations
+    # NSF ≡ Nonsimplicial faces
+    # APF ≡ All polytope faces.
+    triang_NSF = Array{Int}(0, dim + 1)
+    triang_APF = Array{Int}(0, dim + 1)
 
-    # contains the elements in 1:2*n+2 corresponding to simplex faces containing n or more points from IntVert.
-    # These are the indices of the potential faces of the polytope
-    # At this stage different indices in PolytopeFaces might correspond to
-    # the same actual face
+    faces_containing_intvers = βs[βs .== 0]
 
-    # The number of faces that the intersection region polytope has
-    numofPolFaces = length(PolytopeFacesIndices)
+    # Find the faces containing intersecting vertices.
+    faces_containing_intvers = zeros(Int, size(βs))
+    faces_containing_intvers[βs .== 0] = 1 # set zero convex parameters to 1
+    faces_containing_intvers[βs .> 0] = 0 # set positive convex parameters to 0
 
-    # The number vertices furnishing each polytope face. Array of dimension 1 x numofPolFaces
-    NumofIntPointsInEachFace = round.(Int64, NumofIntPointsInEachFace[PolytopeFacesIndices])
+    # What is the number of intersecting points in each of the faces?
+    n_intpoints_ineachface = ones(Int, 1, n_generators) * faces_containing_intvers
+    n_intpoints_ineachface = sum(faces_containing_intvers, 1)
+
+    # Indices of the potential faces of the polytope. Different indices might correspond
+    # to the same face.
+    faceindices = heaviside0(n_intpoints_ineachface - dim).' .* (1:2*dim+2)
+    faceindices = find(faceindices)
+
+    # The number of faces of the intersecting volume polytope
+    numofPolFaces = length(faceindices)
+
+    # The number vertices furnishing each polytope face.
+    n_intpoints_ineachface = round.(Int64, n_intpoints_ineachface[faceindices])
 
     # The indices of the intersecting points (in IntVert) furnishing each polytope face.
     # Array of dimension dim x numofPolFaces. Each column represents a potential polytope face.
-    IntPointsInEachPolFace = FacesContainingIntVert[:, PolytopeFacesIndices] .* repmat(collect(1:dim), 1, numofPolFaces)
+    npts_eachface = faces_containing_intvers[:, faceindices] .*
+                            repmat(collect(1:n_generators), 1, numofPolFaces)
 
 
     # Go through each faces and decide whether it is a true face or a boundary of a face.
-    # Disregard stuff if it is not a true face. 'NonSingularIndices' starts out with only
+    # Disregard stuff if it is not a true face. 'NSF_inds' starts out with only
     # zeros. If the potential polytope face is a true face, then set the value for that
     # face to 1.
-    NonSingularIndices = zeros(size(PolytopeFacesIndices))
+    NSF_inds = classify_faces(numofPolFaces, βs, dim, npts_eachface, faceindices)
+    n_NSF = length(NSF_inds) # The number of nonsingular faces
 
-    for a = 1:numofPolFaces
-        Indices = find(IntPointsInEachPolFace[:, a])
-        Aux = heaviside0(-ones(1, size(Indices, 1)) * ConvexExpIntVert[Indices, :])
-        Multiplicity = [Aux * ones(2*n + 2, 1);
-                        Aux * [ones(n + 1, 1);
-                        2 * ones(n + 1, 1)]]
-        #Multiplicity(1): number of times that the face with index PolytopeFacesIndices(a) appears
-        #Multiplicity(2): (number of faces of simplex1 containing the face) + 2*(number of faces of simplex2 containing the face)
-        if (Multiplicity[1] == 1 || (Multiplicity[1] == 2 &&
-                                    Multiplicity[2] == 3 &&
-                                    PolytopeFacesIndices[a] <= n + 1))
-            NonSingularIndices[a] = 1
-        end
-    end
-
-    # Get back the corresponding indices of the true polytope faces (only nonzeros make
-    # sense, hence find())
-
-    NonSingularIndices = find(NonSingularIndices .* collect(1:numofPolFaces))
-    numofNSPolFaces = size(NonSingularIndices, 1)
-
-    if numofNSPolFaces >= n + 1
-        #println("# Non-simplicial faces >= n + 1\n")
+    if n_NSF >= dim + 1
         # all these arrays contain the corresponding information but only for the
-        # non singular faces. And therefore, the second dimension goes over 1:numofNSPolFaces
-        NonSingularPolytopeFaces = PolytopeFacesIndices[NonSingularIndices]
-        NumOfVertInEachFace = NumofIntPointsInEachFace[NonSingularIndices]
-        NonSingularIntPointsInEachPolFace = IntPointsInEachPolFace[1:end, vec(NonSingularIndices)]
+        # non singular faces. And therefore, the second dimension goes over 1:n_NSF
+        NonSingularPolytopeFaces = faceindices[NSF_inds]
+        NumOfVertInEachFace = n_intpoints_ineachface[NSF_inds]
+        NonSingularPointsInEachFace = npts_eachface[1:end, vec(NSF_inds)]
         # THe number of polytope faces that are actually simplices
-        Simplicial = vec(find(heaviside0(n - NumOfVertInEachFace) .* collect(1:numofNSPolFaces)))
+        Simplicial = vec(find(heaviside0(dim - NumOfVertInEachFace) .* collect(1:n_NSF)))
         NonSimplicialFaces = 0
 
         if length(Simplicial) == 0
             #println("No polytope faces are simplices")
             NonSimplicialFaces = NonSingularPolytopeFaces
-            NonSimplicial = 1:numofNSPolFaces
+            NonSimplicial = 1:n_NSF
             VerticesSFaces = 0
-        elseif length(Simplicial) == numofNSPolFaces
+        elseif length(Simplicial) == n_NSF
             #println("All polytope faces are simplices")
 
-            VerticesSFaces = NonSingularIntPointsInEachPolFace
-            inner = reshape(VerticesSFaces, size(Simplicial, 1) * dim, 1)
+            VerticesSFaces = NonSingularPointsInEachFace
+            inner = reshape(VerticesSFaces, size(Simplicial, 1) * n_generators, 1)
             inner_nonzeros = inner[find(inner)]
-            inner_reshaped_transposed = transpose(reshape(inner_nonzeros, n, size(Simplicial, 1)))
+            inner_reshaped_transposed = (reshape(inner_nonzeros, dim, size(Simplicial, 1))).'
             VerticesSFaces = inner_reshaped_transposed
         else
             #println("Some polytope faces are simplices")
 
-            VerticesSFaces = NonSingularIntPointsInEachPolFace[:, Simplicial]
-            inner = reshape(VerticesSFaces, size(Simplicial, 1)*dim, 1)
+            VerticesSFaces = NonSingularPointsInEachFace[:, Simplicial]
+            inner = reshape(VerticesSFaces, size(Simplicial, 1)*n_generators, 1)
 
             inner_nonzeros = inner[find(inner)]
-            inner_reshaped_transposed = transpose(reshape(inner_nonzeros, n, size(Simplicial, 1)))
+            inner_reshaped_transposed = transpose(reshape(inner_nonzeros, dim, size(Simplicial, 1)))
             VerticesSFaces = inner_reshaped_transposed
-            NonSimplicial = complementary(Simplicial, numofNSPolFaces)
+            NonSimplicial = complementary(Simplicial, n_NSF)
             NonSimplicialFaces = NonSingularPolytopeFaces[NonSimplicial]
         end
 
-
-        if (NonSimplicialFaces[1] > 0)
+        if NonSimplicialFaces[1] > 0
             #println("One or more nonsimplical faces.")
-
-            VerticesNSFaces = NonSingularIntPointsInEachPolFace[:, NonSimplicial]
-            SimplexIndexNS = round.(Int64, ceil.(NonSimplicialFaces / (n + 1)))
-            SimplexFaceIndexNS = round.(Int64, NonSimplicialFaces - (SimplexIndexNS - 1) * (n + 1))
-
-            TriangNSFaces = TriangulationNonSimplicialFaces(VerticesNSFaces, SimplexIndexNS, SimplexFaceIndexNS, ConvexExpIntVert, n)
-        else
-            #println("No nonsimplical faces.")
+            VerticesNSFaces = NonSingularPointsInEachFace[:, NonSimplicial]
+            SimplexIndexNS = round.(Int64, ceil.(NonSimplicialFaces / (dim + 1)))
+            SimplexFaceIndexNS = round.(Int64, NonSimplicialFaces - (SimplexIndexNS - 1) * (dim + 1))
+            #t1 = time_ns()
+            triang_NSF = TriangulationNonSimplicialFaces(VerticesNSFaces, SimplexIndexNS, SimplexFaceIndexNS, βs, dim)
+            #t2 = time_ns()
+            #println("Triangulation of nonsimplicial faces took ", (t2 - t1)/10^6, " ms")
         end
-        #VerticesSFaces
-        TriangAllPolytopeFaces = Update(VerticesSFaces, TriangNSFaces)
+        if !isempty(triang_NSF)
+            triang_APF = Update(VerticesSFaces, triang_NSF)
+        end
     else
         #println("# Non-simplicial faces < n + 1\n")
-
     end
-    return TriangAllPolytopeFaces, numofNSPolFaces
+    return triang_APF, n_NSF
+end
+
+
+
+"""x
+Go through each faces and decide whether it is a true face or a boundary of a face.
+Returns a vector of length equal to the number of faces in the intersecting polytope.
+The ith entry of this vector is _i_ if the corresponding face is a true face, 0 otherwise.
+"""
+function classify_faces(numofPolFaces::Int,
+                        βs::Array{Float64, 2},
+                        dim::Int,
+                        npts_eachface::Array{Int, 2},
+                        faceindices::Array{Int, 1})
+
+    NSF_inds = zeros(Int, 0)
+
+    # Loop over faces.
+    for faceindex = 1:numofPolFaces
+        inds = find(npts_eachface[:, faceindex])
+        Aux = heaviside0(-sum(βs[inds, :], 1))
+        multiplicity = [Aux * ones(2*dim + 2, 1);
+                        Aux * [ones(dim + 1, 1);
+                        2 * ones(dim + 1, 1)]]
+        #multiplicity(1): number of times that the face with index faceindices(a) appears
+        #multiplicity(2): (number of faces of simplex1 containing the face) +
+        #                   2*(number of faces of simplex2 containing the face)
+        if multiplicity[1] == 1 || (multiplicity[1] == 2 && multiplicity[2] == 3 &&
+                                    faceindices[faceindex] <= dim + 1)
+            push!(NSF_inds, faceindex)
+        end
+    end
+
+    return NSF_inds
 end

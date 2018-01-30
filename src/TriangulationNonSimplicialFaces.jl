@@ -1,5 +1,6 @@
 include("qhull.jl")
 using .QHull.delaunay_tesselation
+using .QHull.delaunayn
 
 
 #TODO:: Needs revision. Doesn't work.
@@ -32,33 +33,29 @@ function TriangulationNonSimplicialFaces(VerticesNSFaces,SimplexIndexNS,SimplexF
         CopBarCoord[:, PermC[1:n]] = eye(n)
         CopBarCoord[:, PermC[(n + 1):i]] = - Null[PermC[1:n], :]
 
-        CoplanarCoord=CopBarCoord[2:n, :]
-        CoplanarCoord[:, PermC[1]] = zeros(n - 1, 1)
-        C = transpose(CoplanarCoord)
+        CoplanarCoord = CopBarCoord[2:n, :]
+        CoplanarCoord[:, PermC[1]] .= 0.0
 
         # Triangulating
-        points, simplices = delaunay_tesselation(C)
-        #disp('you filthy bastard')
-
-        NewTriang = simplices
-
+        #points, simplices = delaunay_tesselation(C)
+        simplices = delaunayn(CoplanarCoord.')
         # Notice that the order in the argument of delaunayn
         # corresponds to the order given by Indices
-        # The rows of NewTriang contain the indices of the vertices generating
+        # The rows of simplices contain the indices of the vertices generating
         # the corresponding simplex in the order given by Indices, on the other hand
         # the entries of Indices correspond to the indices of the original intersecting
         # points in IntVert
-        d = size(NewTriang, 1)
+        d = size(simplices, 1)
 
         # Triangulation of the non simplicial face a. The indices of the vertices generating
         # the simplices now correspond to the order given by IntVert
-        Aux = reshape(transpose(NewTriang), n * d, 1)
-        NewTriang = transpose(reshape(Indices[Aux], n, d))
+        Aux = reshape(transpose(simplices), n * d, 1)
+        simplices = transpose(reshape(Indices[Aux], n, d))
 
         if a == 1
-            TriangNSFaces = NewTriang;
+            TriangNSFaces = simplices;
         else
-            TriangNSFaces = [TriangNSFaces; NewTriang]
+            TriangNSFaces = [TriangNSFaces; simplices]
         end
     end
     return TriangNSFaces
