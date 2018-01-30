@@ -78,7 +78,7 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2}; toler
     # At least one circumsphere contains vertices of the other simplex
 
     if vertices1InCircum2 + vertices2InCircum1 >= 1
-      ConvexExp1in2, ConvexExp2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1 = BarycentricCoordinates(S1,S2,orientation_S1,orientation_S2,tolerance)
+      βs1in2, βs2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1 = BarycentricCoordinates(S1,S2,orientation_S1,orientation_S2,tolerance)
 
       # Trivial intersections
       TriviallyContained = heaviside0([numof1in2 numof2in1] - (n+1))
@@ -94,22 +94,24 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2}; toler
         end
       else # No simplex contains the other
 
-        Ncomm, ordered_vertices1, ordered_vertices2 = SharedVertices(ConvexExp1in2,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1)
+        Ncomm, ordered_vertices1, ordered_vertices2 = SharedVertices(βs1in2,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1)
+
 
         # Is there any shared face?
         if Ncomm == n
           #print("The simplices share a face")
-          IntVol = SharingAFace(S2, ConvexExp1in2, ordered_vertices1, ordered_vertices2)
-
+          IntVol = SharingAFace(S2, βs1in2, ordered_vertices1, ordered_vertices2)
         else # The simplices do not share a face.
-          #IntVert, ConvexExpIntVert  = IntersectionOfBoundaries_Eff(S1,S2,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm,tolerance)
-          IntVert, ConvexExpIntVert  = IntersectionOfBoundaries(S1,S2,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm,tolerance)
-          #dim = size(IntVert, 2)
-          #@show IntVert, ConvexExpIntVert
+          #println("\nThe simplices do not share a face")
+          #print("Intersection of boundaries\t")
+          IntVert, ConvexExpIntVert  = IntersectionOfBoundaries(S1,S2,βs1in2,βs2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1, Ncomm, tolerance)
           if !isempty(IntVert)
-          #if dim > 1
-            IntVert,ConvexExpIntVert = PolytopeGeneratingVertices(S1,S2,IntVert,ConvexExpIntVert,ConvexExp1in2,ConvexExp2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm);
+            #print("PolytopeGeneratingVertices\t")
+
+            IntVert,ConvexExpIntVert = PolytopeGeneratingVertices(S1,S2,IntVert,ConvexExpIntVert,βs1in2,βs2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm);
+            #print("Volume computation\t\t")
             IntVol = VolumeComputation(IntVert, ConvexExpIntVert)
+            #println("")
           end
         end
       end
@@ -118,21 +120,28 @@ function simplexintersection(S1::Array{Float64, 2}, S2::Array{Float64, 2}; toler
     end
   end
 
-  #if what == "volume"
-  #  return IntVol[1]
-  #elseif what == "vertices"
-  #  return IntVert
-  #elseif what == "both"
-  #  return IntVol[1], IntVert
-  #end
   return IntVol
 end
 
 export simplexintersection,
         childsimplex,
-         SomeVertexInCircumsphere,BarycentricCoordinates,heaviside0,
-        SharedVertices,SharingAFace,IntersectionOfBoundaries,PolytopeGeneratingVertices,VolumeComputation, Circumsphere,
+         SomeVertexInCircumsphere,
+         BarycentricCoordinates,
+         heaviside0,
+        SharedVertices,
+        SharingAFace,
+        IntersectionOfBoundaries,
+        PolytopeGeneratingVertices,
+        VolumeComputation,
+        Circumsphere,
         issingular,
-        radius, centroid, orientation, volume,
-            Circumsphere, nontrivially_intersecting_simplices, simplices_sharing_vertices, intersecting_simplices
+        radius,
+        centroid,
+        orientation,
+        volume,
+        Circumsphere,
+        nontrivially_intersecting_simplices,
+        simplices_sharing_vertices,
+        intersecting_simplices,
+        QHull
 end #module

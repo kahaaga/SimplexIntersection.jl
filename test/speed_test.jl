@@ -1,11 +1,16 @@
-function speed_test(dim,N)
+using SimplexIntersection
 
-    T = time_ns()/10^9
-    for i =1:N
+function speed_test_nontrivial(dim,N)
+    for i = 1:N
         S1,S2 = SimplexIntersection.nontrivially_intersecting_simplices(dim)
-
-         SimplexIntersection.simplexintersection(S1.', S2.')
-
+        SimplexIntersection.simplexintersection(S1.', S2.')
     end
-    (time_ns()/10^9 - T)/N 
+end
+
+
+function speed_test_sharing(dim,N)
+    for i = 1:N
+        S1,S2 = SimplexIntersection.simplices_sharing_vertices(dim)
+        SimplexIntersection.simplexintersection(S1.', S2.')
+    end
 end
