@@ -1,19 +1,22 @@
-function SharedVertices(convexexp1in2, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1)
+function SharedVertices(convexexp1in2::Array{Float64, 2},
+                        ordered_vertices1::Vector{Int},
+                        ordered_vertices2::Vector{Int},
+                        numof1in2::Int,
+                        numof2in1::Int)
 
     reordered_vertices1 = copy(ordered_vertices1)
     reordered_vertices2 = copy(ordered_vertices2)
-
     Ncomm = 0
     M = numof1in2 * numof2in1
 
     if M > 0 # The simplices might share some vertex
-        contained1in2 = collect(1:numof1in2).'
-        contained2in1 = collect(1:numof2in1).'
+        contained1in2 = collect(1:numof1in2)
+        contained2in1 = collect(1:numof2in1)
 
         referenceexpansion = eye(size(convexexp1in2, 1), size(convexexp1in2, 2))
 
-        exp1 = convexexp1in2[:, reordered_vertices1[1, 1:numof1in2]]
-        exp2 = referenceexpansion[:, reordered_vertices2[1, 1:numof2in1]]
+        exp1 = convexexp1in2[:, reordered_vertices1[1:numof1in2]]
+        exp2 = referenceexpansion[:, reordered_vertices2[1:numof2in1]]
 
         num1 = numof1in2
         num2 = numof2in1
@@ -24,8 +27,8 @@ function SharedVertices(convexexp1in2, ordered_vertices1, ordered_vertices2, num
 
         temp = maximum(abs.(exp1Xones_num2 - ones_num1Xexp2), 1) # WHAT?
         coincidences = find(heaviside0(-temp).' .* collect(1:M))
-        coincidences = coincidences.'
-        Ncomm = size(coincidences, 2)
+        coincidences = coincidences
+        Ncomm = length(coincidences)
 
         if Ncomm > 0
             # Indices in 1:numof1in2 corresponding to the vertices in simplex1 that are shared
@@ -38,7 +41,7 @@ function SharedVertices(convexexp1in2, ordered_vertices1, ordered_vertices2, num
             Temp1 = reordered_vertices1[common_indices_in1]
             if Ncomm < numof1in2
                 indices_not_common_in1 = complementary(common_indices_in1, numof1in2)
-                Temp1 = [reordered_vertices1[common_indices_in1] reordered_vertices1[indices_not_common_in1]]
+                Temp1 = [reordered_vertices1[common_indices_in1]; reordered_vertices1[indices_not_common_in1]]
             end
             reordered_vertices1[1:numof1in2] = Temp1
 
@@ -47,7 +50,7 @@ function SharedVertices(convexexp1in2, ordered_vertices1, ordered_vertices2, num
             Temp2 = reordered_vertices2[common_indices_in2]
             if Ncomm < numof2in1
                 indices_not_common_in2 = complementary(common_indices_in2, numof2in1)
-                Temp2 = [reordered_vertices2[common_indices_in2] reordered_vertices2[indices_not_common_in2]]
+                Temp2 = [reordered_vertices2[common_indices_in2]; reordered_vertices2[indices_not_common_in2]]
             end
             reordered_vertices2[1:numof2in1] = Temp2
 

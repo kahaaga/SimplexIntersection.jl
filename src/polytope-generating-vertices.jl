@@ -3,7 +3,17 @@ Fancy way of updating IntVert. We need to add the vertices that are common and c
 
 """
 
-function PolytopeGeneratingVertices(Simplex1, Simplex2, IntVert, ConvexExpIntVert, convexexp1in2, convexexp2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1, Ncomm)
+function PolytopeGeneratingVertices(Simplex1::Array{Float64, 2},
+                                    Simplex2::Array{Float64, 2},
+                                    IntVert::Array{Float64, 2},
+                                    ConvexExpIntVert::Array{Float64, 2},
+                                    convexexp1in2::Array{Float64, 2},
+                                    convexexp2in1::Array{Float64, 2},
+                                    ordered_vertices1::Vector{Int},
+                                    ordered_vertices2::Vector{Int},
+                                    numof1in2::Int,
+                                    numof2in1::Int,
+                                    Ncomm::Int)
     n = size(Simplex1, 1)
 
     numof1in2NotShared = numof1in2 - Ncomm
@@ -29,8 +39,8 @@ function PolytopeGeneratingVertices(Simplex1, Simplex2, IntVert, ConvexExpIntVer
         #println("# Each simplex contains vertices of the other beyond the shared ones")
         Id = eye(n+1, n+1)
 
-        indexvert1in2notshared = ordered_vertices1[1, Ncomm+1:numof1in2].'
-        indexvert2in1notshared = ordered_vertices2[1, Ncomm+1:numof2in1].'
+        indexvert1in2notshared = ordered_vertices1[Ncomm+1:numof1in2].'
+        indexvert2in1notshared = ordered_vertices2[Ncomm+1:numof2in1].'
 
         IntVert = vcat(IntVert,
                     Simplex1[:, vec(indexvert1in2notshared)].',
@@ -50,7 +60,7 @@ function PolytopeGeneratingVertices(Simplex1, Simplex2, IntVert, ConvexExpIntVer
         #println("Only Simplex2 contains vertices of Simplex1 other than the shared ones")
         Id = eye(n+1, n+1)
 
-        indexvert1in2notshared = ordered_vertices1[1, Ncomm+1:numof1in2].'
+        indexvert1in2notshared = ordered_vertices1[Ncomm+1:numof1in2].'
 
         IntVert = vcat(IntVert,
                     Simplex1[:, vec(indexvert1in2notshared)].')
@@ -66,7 +76,7 @@ function PolytopeGeneratingVertices(Simplex1, Simplex2, IntVert, ConvexExpIntVer
 
         Id = eye(n+1, n+1)
 
-        indexvert2in1notshared = ordered_vertices2[1, Ncomm+1:numof2in1].'
+        indexvert2in1notshared = ordered_vertices2[Ncomm+1:numof2in1].'
 
         IntVert = vcat(IntVert,
                     Simplex2[:, vec(indexvert2in1notshared)].')
