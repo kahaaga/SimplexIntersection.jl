@@ -48,6 +48,10 @@ function SharedFaceVertices(simplex2::Array{Float64, 2},
                             (convex_exp_lastvertof1[indexextra2][1] + sigma)
         newpoint = simplex2[:, vec([nonnegativeindices.' [indexextra2]])] * nonnegativecoeffs
         intersecting_vertices = [simplex2[:, vec(shared_vert_indicesin2)] newpoint]
-        return intersecting_vertices
+        if abs(det([ones(1, n + 1); intersecting_vertices])) > 0
+            return intersecting_vertices
+        else
+            return Float64[]
+        end
     end
 end
