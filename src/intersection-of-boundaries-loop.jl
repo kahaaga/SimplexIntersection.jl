@@ -25,7 +25,7 @@ function IntersectionOfBoundaries_NoStorage(s₁::Array{Float64, 2},
     n = size(s₁, 1)
     IntVert = Vector{Float64}(0)
     ConvexExpIntVert = Vector{Float64}(0)
-    Z = zeros(Float64, 2*n+2, 1)
+    Z = Array{Float64}(2*n+2, 1)
 
     Indices = 1:n+1
 
@@ -101,7 +101,6 @@ function IntersectionOfBoundaries_NoStorage(s₁::Array{Float64, 2},
         end
     end
 
-
     return reshape(IntVert, n, div(length(IntVert), n)).', reshape(ConvexExpIntVert, 2*n+2, div(length(ConvexExpIntVert), 2*n+2)).'
 end
 
@@ -110,7 +109,7 @@ function binarydecomp(m::Int, n::Int)
     binary = zeros(Int,n+1)
     binary[n+1] = floor(Int,m/2^n)
 
-    for i = 1:n
+    @inbounds for i = 1:n
         m = m-binary[n+1-i+1]*2^(n-i+1)
         binary[n+1-i] = floor(Int, m/2^(n-i))
     end

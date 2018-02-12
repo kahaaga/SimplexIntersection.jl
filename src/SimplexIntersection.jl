@@ -1,7 +1,5 @@
 module SimplexIntersection
 
-using SimplexSplitting
-
 include("Circumsphere.jl")
 include("barycentric-coordinates.jl")
 include("geometry.jl")
@@ -26,12 +24,17 @@ include("simplexintersect.jl")
 include("init_functions.jl")
 
 function __init__()
-
    # Trigger compilation of the most time consuming functions
    dim = 2
-   reps = 1
-   shared_vertex_intersection(dim, reps)
-   nontrivial_intersection(dim, reps) # Triggers Delaunay triangulation and
+   reps = 10
+   for i in 1:reps
+      simplexintersection(rand(3, 4), rand(3, 4))
+   end
+
+   shared_vertex_intersection(3, reps)
+   nontrivial_intersection(3, reps)
+   shared_vertex_intersection(4, reps)
+   nontrivial_intersection(4, reps)
 end
 
 export simplexintersection,

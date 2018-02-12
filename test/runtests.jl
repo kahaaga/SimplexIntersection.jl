@@ -10,14 +10,14 @@ speed_test_sharing(3, 1)
 speed_test_sharing(4, 1)
 speed_test_sharing(5, 1)
 #
-# nreps = 3000
-# t3D_nontrivial = @elapsed speed_test_nontrivial(3, nreps)
-# println("Speed test:", nreps, " nontrivial intersections in 3D ... ", t3D_nontrivial/nreps, " s per intersection")
+nreps = 50
+t3D_nontrivial = @elapsed speed_test_nontrivial(3, nreps)
+println("Speed test:", nreps, " nontrivial intersections in 3D ... ", t3D_nontrivial/nreps, " s per intersection")
 #
 # t4D_nontrivial = @elapsed speed_test_nontrivial(4, nreps)
 #
 # println("Speed test:", nreps, " nontrivial intersections in 4D ... ", t4D_nontrivial/nreps, " s per intersection")
-#
+
 # t5D_nontrivial = @elapsed speed_test_nontrivial(5, nreps)
 # println("Speed test:", nreps, " nontrivial intersections in 5D ... ", t5D_nontrivial/nreps, " s per intersection")
 # #

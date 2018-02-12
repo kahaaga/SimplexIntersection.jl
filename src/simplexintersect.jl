@@ -145,24 +145,30 @@ function intersectingvertices(S1::Array{Float64, 2}, S2::Array{Float64, 2}; tole
       IsSomeContained = sum(TriviallyContained, 2)[1]
 
       if IsSomeContained == 2.0 # The simplices coincide
-        return S1
+        println("# The simplices coincide")
+        return S1.'
       elseif IsSomeContained == 1.0 # One simplex is contained in the other
         if TriviallyContained[1] == 1.0 # Simplex1 is contained in Simplex2
-          return S1
+          println("Simplex1 is contained in Simplex2")
+          return S1.'
         else # Simplex2 is contained in Simplex1
-          return S2
+          println("Simplex2 is contained in Simplex1")
+          return S2.'
         end
       else # No simplex contains the other
         Ncomm, ordered_vertices1, ordered_vertices2 = SharedVertices(βs1in2,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1)
 
         if Ncomm == n # The simplices share a face
+          println("The simplices share a face")
           return SharedFaceVertices(S2, βs1in2, ordered_vertices1, ordered_vertices2)
         else  # The simplices do not share a face.
           IntVert, ConvexExpIntVert = IntersectionOfBoundaries_NoStorage(S1,S2,βs1in2,βs2in1, ordered_vertices1, ordered_vertices2, numof1in2, numof2in1, Ncomm, tolerance)
           if !isempty(IntVert)
-            IntVert,ConvexExpIntVert = PolytopeGeneratingVertices(S1,S2,IntVert,ConvexExpIntVert,βs1in2,βs2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm);
+            IntVert,ConvexExpIntVert = PolytopeGeneratingVertices(S1,S2,IntVert,ConvexExpIntVert,βs1in2,βs2in1,ordered_vertices1,ordered_vertices2,numof1in2,numof2in1,Ncomm)
+            return IntVert
+          else
+            return Float64[]
           end
-          return IntVert
         end
       end
     else # No circumsphere of either simplex contains vertices of the other simplex
